@@ -15,6 +15,29 @@
         // Visit developer.tomtom.com if you don't have one
         var API_KEY = 0123456789
         
+        var TORONTO = {lng: -79.379556, lat: 43.648321};
+        
+        var map = tt.map({
+            key: API_KEY,
+            container: 'map',
+            basePath: 'sdk/',
+            theme: {
+                style: 'main',
+                layer: 'basic',
+                source: 'vector'
+            },
+            dragPan: true,
+            center: TORONTO,
+            zoom: 13
+        });
+        
+        map.addControl(new tt.NavigationControl());
+
+        // Display the location on click
+        map.on('click', function(event) {
+            console.log(event.lngLat);
+        });
+        
     </script>
 </body>
 </html>
