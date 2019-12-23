@@ -7,15 +7,35 @@
     <link rel='stylesheet' type='text/css' href='https://api.tomtom.com/maps-sdk-for-web/cdn/5.x/5.39.0/maps/maps.css'>
     <script src="https://api.tomtom.com/maps-sdk-for-web/cdn/5.x/5.39.0/maps/maps-web.min.js"></script>
 </head>
+    
+<style>
+    .icon {
+        background-size: cover;
+        height: 30px;
+        width: 30px;
+    }
+</style>
+    
 <body>
     <h4>Add your API KEY in the script section</h4>
     <div style='width:100vw; height: 100vh' id='map' class='map'></div>
+    <div id='address'>?</div>
+    
     <script>
         // Add your api key in the form :  var API_KEY = xxxxxxxx
         // Visit developer.tomtom.com if you don't have one
         var API_KEY = 0123456789
         
         var TORONTO = {lng: -79.379556, lat: 43.648321};
+        var currentLocationMarker = null;
+        
+        // Reverse geocode a location to get the address, return a promise
+        var fetchAddress = function (coordinates) {
+            return tt.services.reverseGeocode({
+                key: API_KEY,
+                position: coordinates
+            }).go();
+        };
         
         var trafficIncidentsConfig = {
             key: API_KEY,
@@ -46,6 +66,25 @@
         // Display the location on click
         map.on('click', function(event) {
             console.log(event.lngLat);
+            fetchAddress(event.lngLat)
+                .then(function (reverseGeocodeResponse) {
+                    console.log(reverseGeocodeResponse);
+                    var address = reverseGeocodeResponse.addresses[0].address.freeformAddress;
+                    if (!address) {
+                        throw new Error('Could not find any matching address.');
+                    }
+                    document.getElementById("address").innerHTML=address; 
+
+                    // if we already have a marker then we remove it
+                    if (currentLocationMarker != null) {
+                        currentLocationMarker.remove();
+                    }
+                    // Add a marker
+                    currentLocationMarker = new tt.Marker();
+                    currentLocationMarker.setLngLat(reverseGeocodeResponse.addresses[0].position);
+                    currentLocationMarker.addTo(map);
+                    
+                });
         });
         
         map.on('load', function() {
