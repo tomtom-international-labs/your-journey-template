@@ -17,6 +17,16 @@
         
         var TORONTO = {lng: -79.379556, lat: 43.648321};
         
+        var trafficIncidentsConfig = {
+            key: API_KEY,
+            incidentTiles: {
+                style: 'tomtom://vector/1/s3'
+            }, 
+            incidentDetails: {
+                style: 's2'
+            }
+        }
+        
         var map = tt.map({
             key: API_KEY,
             container: 'map',
@@ -36,6 +46,10 @@
         // Display the location on click
         map.on('click', function(event) {
             console.log(event.lngLat);
+        });
+        
+        map.on('load', function() {
+            map.addTier(new tt.TrafficIncidentTier(trafficIncidentsConfig));
         });
         
     </script>
