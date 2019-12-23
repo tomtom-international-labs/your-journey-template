@@ -5,6 +5,7 @@
     <meta charset='UTF-8'>
     <title>My TomTom Maps APIs Journey</title>
     <link rel='stylesheet' type='text/css' href='https://api.tomtom.com/maps-sdk-for-web/cdn/5.x/5.39.0/maps/maps.css'>
+    <link rel='stylesheet' type='text/css' href='https://api.tomtom.com/maps-sdk-for-web/cdn/5.x/5.39.0/sdk/css-styles/routing.css' />
     <script src="https://api.tomtom.com/maps-sdk-for-web/cdn/5.x/5.39.0/maps/maps-web.min.js"></script>
 </head>
     
@@ -28,6 +29,38 @@
         
         var TORONTO = {lng: -79.379556, lat: 43.648321};
         var currentLocationMarker = null;
+        var destinationMarker = null;
+        
+        var routeLayer = null;
+        var displayRoute = function(geoJSON) {
+            routeLayer = map.addLayer({
+                'id': 'route',
+                'type': 'line',
+                'source': {
+                    'type': 'geojson',
+                    'data': geoJSON
+                },
+                'layout': {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                'paint': {
+                    'line-color': 'blue',
+                    'line-width': 12,
+                    'line-dasharray': [2, 2]
+                }
+            });
+        }
+        
+        // Route Options - Pedestrian route.
+        var routeOptions = {
+            key: API_KEY,
+            departAt: 'now',
+            locations : [],
+            instructionsType : 'text',
+            traffic: false,
+            travelMode: 'pedestrian'
+        };
         
         // Reverse geocode a location to get the address, return a promise
         var fetchAddress = function (coordinates) {
@@ -75,14 +108,38 @@
                     }
                     document.getElementById("address").innerHTML=address; 
 
-                    // if we already have a marker then we remove it
-                    if (currentLocationMarker != null) {
-                        currentLocationMarker.remove();
+                    // add marker if we have nothing yet
+                    if (currentLocationMarker == null) {
+                        // Add a marker
+                        currentLocationMarker = new tt.Marker(getCurrentLocationIcon());
+                        currentLocationMarker.setLngLat(reverseGeocodeResponse.addresses[0].position);
+                        currentLocationMarker.addTo(map);
                     }
-                    // Add a marker
-                    currentLocationMarker = new tt.Marker();
-                    currentLocationMarker.setLngLat(reverseGeocodeResponse.addresses[0].position);
-                    currentLocationMarker.addTo(map);
+                    else {
+                        if ( destinationMarker != null) {
+                            destinationMarker.remove();
+                            map.removeLayer('route');
+                            map.removeSource('route');
+                            map.triggerRepaint();
+                        }
+                        // Add the destination marker and calculate a pedestrian ROUTE
+                        destinationMarker = new tt.Marker();
+                        destinationMarker.setLngLat(reverseGeocodeResponse.addresses[0].position);
+                        destinationMarker.addTo(map);
+                        
+                        // First REMOVE THE OLD array!
+                        routeOptions.locations = [];
+                        // Update the route Options
+                        routeOptions.locations.push(currentLocationMarker.getLngLat());
+                        routeOptions.locations.push(destinationMarker.getLngLat());
+                        // Now we request the route
+                        tt.services.calculateRoute(routeOptions).go().then(
+                            function(routeData) {
+                                var geoJSON = routeData.toGeoJson();
+                                console.log(geoJSON);
+                                displayRoute(geoJSON);
+                            }
+                        );
                     
                 });
         });
