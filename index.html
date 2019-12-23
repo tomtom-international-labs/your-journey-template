@@ -7,6 +7,7 @@
     <link rel='stylesheet' type='text/css' href='https://api.tomtom.com/maps-sdk-for-web/cdn/5.x/5.39.0/maps/maps.css'>
     <link rel='stylesheet' type='text/css' href='https://api.tomtom.com/maps-sdk-for-web/cdn/5.x/5.39.0/sdk/css-styles/routing.css' />
     <script src="https://api.tomtom.com/maps-sdk-for-web/cdn/5.x/5.39.0/maps/maps-web.min.js"></script>
+    <script src="https://api.tomtom.com/maps-sdk-for-web/cdn/5.x/5.39.0/services/services-web.min.js"></script>
 </head>
     
 <style>
@@ -19,13 +20,13 @@
     
 <body>
     <h4>Add your API KEY in the script section</h4>
-    <div style='width:100vw; height: 100vh' id='map' class='map'></div>
+    <div style='width:100vw; height: 90vh' id='map' class='map'></div>
     <div id='address'>?</div>
     
     <script>
         // Add your api key in the form :  var API_KEY = xxxxxxxx
         // Visit developer.tomtom.com if you don't have one
-        var API_KEY = 0123456789
+        var API_KEY = 0123456789-
         
         var TORONTO = {lng: -79.379556, lat: 43.648321};
         var currentLocationMarker = null;
