@@ -5,6 +5,7 @@
     <meta charset='UTF-8'>
     <title>My TomTom Maps APIs Journey</title>
     <link rel='stylesheet' type='text/css' href='https://api.tomtom.com/maps-sdk-for-web/cdn/5.x/5.39.0/maps/maps.css'>
+    <link rel='stylesheet' type='text/css' href='https://api.tomtom.com/maps-sdk-for-web/cdn/5.x/5.42.0/maps/css-styles/poi.css'/>
     <script src="https://api.tomtom.com/maps-sdk-for-web/cdn/5.x/5.39.0/maps/maps-web.min.js"></script>
     <script src="https://api.tomtom.com/maps-sdk-for-web/cdn/5.x/5.39.0/services/services-web.min.js"></script>
 </head>
@@ -30,6 +31,56 @@
         var TORONTO = {lng: -79.379556, lat: 43.648321};
         var currentLocationMarker = null;
         var destinationMarker = null;
+        
+        var getCoffeeIcon = function() {
+            var element = document.createElement('div');
+            element.className = 'icon tt-icon-shield';
+            var innerElement = document.createElement('div');
+            innerElement.className = 'icon tt-icon-ic_map_poi_120-white';
+            element.appendChild(innerElement);
+            return element;
+        }
+
+        // Add the array of markers POIs to the map
+        var currentMarkers = [];
+        var addPOIs = function(array) {
+            if (currentMarkers.length != 0) {
+                currentMarkers.forEach( function(marker){
+                    marker.remove();
+                });
+            }
+            currentMarkers = [];
+            // Create new Markers
+            array.forEach(function(poi){
+                console.log('adding '+poi);
+                var marker = new tt.Marker(getCoffeeIcon());
+                marker.setLngLat(poi.position);
+                marker.addTo(map);
+                currentMarkers.push(marker);
+            });
+            
+        }
+        
+        // Text is a search keyword for the Fuzzy Search API
+        // coordinates is an array of coordinates representing the route.
+        var searchFor = function(text, coordinates) {
+            tt.services.alongRouteSearch({
+                key: API_KEY,
+                limit: 20,
+                maxDetourTime: 120,
+                query: text,
+                route: coordinates
+            })
+            .go()
+            .then(function(response) {
+                console.log('SUMMARY:');
+                console.table(response.summary);
+                console.log('RESULTS:');
+                console.table(response.results);
+                // Now lets add those POIs to the map
+                addPOIs(response.results);
+            });
+        }
         
         var routeLayer = null;
         var displayRoute = function(geoJSON) {
@@ -138,6 +189,7 @@
                                 var geoJSON = routeData.toGeoJson();
                                 console.log(geoJSON);
                                 displayRoute(geoJSON);
+                                searchFor('coffee', geoJSON.features[0].geometry.coordinates);
                             }
                         );
                     
